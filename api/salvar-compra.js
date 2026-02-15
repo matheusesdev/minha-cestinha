@@ -7,12 +7,11 @@ export default async function handler(request, response) {
 
   try {
     const sql = neon(process.env.DATABASE_URL);
-    const { date, total, items } = request.body;
+    const { date, total, items, budget, paymentMethod } = request.body;
 
-    // Ajustado para inserir na coluna 'data' e 'itens' (nomes reais no banco)
     await sql`
-      INSERT INTO compras (data, total, itens)
-      VALUES (${date}, ${total}, ${JSON.stringify(items)})
+      INSERT INTO compras (data, total, itens, meta, pagamento)
+      VALUES (${date}, ${total}, ${JSON.stringify(items)}, ${budget || null}, ${paymentMethod || null})
     `;
 
     return response.status(201).json({ message: 'Compra salva com sucesso!' });

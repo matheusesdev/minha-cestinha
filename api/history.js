@@ -6,7 +6,7 @@ export default async function handler(request, response) {
 
     // Ajustamos para buscar 'data' e dar o apelido de 'date' para o React não quebrar
     const result = await sql`
-      SELECT id, data as date, total, itens 
+      SELECT id, data as date, total, itens, meta, pagamento 
       FROM compras 
       ORDER BY data DESC 
       LIMIT 50
@@ -19,7 +19,9 @@ export default async function handler(request, response) {
         date: row.date,
         total: Number(row.total),
         items: Array.isArray(items) ? items : [],
-        itemCount: Array.isArray(items) ? items.length : 0
+        itemCount: Array.isArray(items) ? items.length : 0,
+        budget: row.meta ? Number(row.meta) : null,
+        paymentMethod: row.pagamento || null
       };
     });
 

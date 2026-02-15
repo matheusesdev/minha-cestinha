@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  ShoppingBasket, Trash2, Plus, Minus, Wallet, 
+  ShoppingBasket, Trash2, Plus, Minus, Wallet, Banknote, CreditCard,
   PieChart, History, ChevronRight, CheckCircle2,
   X, Edit2, TrendingUp, TrendingDown, Calendar, ArrowLeft, AlertCircle,
   Leaf, Beef, Milk, SprayCan
@@ -64,6 +64,23 @@ const CATEGORIES = [
   { id: 'limpeza', label: 'Limpeza', icon: <SprayCan size={18} />, color: 'indigo' },
 ];
 
+const PixIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M15.08 17.67l-2.37-2.37a1 1 0 00-1.41 0l-2.37 2.37a2.83 2.83 0 01-2 .83h-.7l3.68 3.68a3.22 3.22 0 004.57 0l3.68-3.68h-.55a2.83 2.83 0 01-2-.83h-.53z"/>
+    <path d="M8.93 6.33l2.37 2.37a1 1 0 001.41 0l2.37-2.37a2.83 2.83 0 012-.83h.55L14 1.82a3.22 3.22 0 00-4.57 0L5.76 5.5h.7a2.83 2.83 0 012 .83h.47z"/>
+    <path d="M21.18 9.42l-1.59-1.59a.42.42 0 00-.3-.12h-1.76a1.42 1.42 0 00-1 .41l-2.37 2.37a2.42 2.42 0 01-3.42 0L8.37 8.12a1.42 1.42 0 00-1-.41H5.61a.42.42 0 00-.3.12L3.72 9.42a3.22 3.22 0 000 4.57l1.59 1.59a.42.42 0 00.3.12h1.76a1.42 1.42 0 001-.41l2.37-2.37a2.42 2.42 0 013.42 0l2.37 2.37a1.42 1.42 0 001 .41h1.76a.42.42 0 00.3-.12l1.59-1.59a3.22 3.22 0 000-4.57z"/>
+  </svg>
+);
+
+const PAYMENT_METHODS = [
+  { id: 'dinheiro', label: 'Dinheiro', icon: <Banknote size={18} />, active: 'border-emerald-500 bg-emerald-50 text-emerald-700' },
+  { id: 'pix', label: 'Pix', icon: <PixIcon size={18} />, active: 'border-teal-500 bg-teal-50 text-teal-700' },
+  { id: 'credito', label: 'Crédito', icon: <CreditCard size={18} />, active: 'border-blue-500 bg-blue-50 text-blue-700' },
+  { id: 'debito', label: 'Débito', icon: <CreditCard size={18} />, active: 'border-purple-500 bg-purple-50 text-purple-700' },
+];
+
+const getPaymentInfo = (id) => PAYMENT_METHODS.find(m => m.id === id);
+
 const App = () => {
   // --- Estados ---
   const [activeTab, setActiveTab] = useState('list');
@@ -74,6 +91,8 @@ const App = () => {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = useState(false);
+  const [isFinishOpen, setIsFinishOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
   const [viewingPurchase, setViewingPurchase] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'danger' });
@@ -165,41 +184,39 @@ const App = () => {
 
   const finishShopping = () => {
     if (items.length === 0) return;
-    setConfirmModal({
-      isOpen: true,
-      title: 'Finalizar Compra',
-      message: 'Deseja salvar esta compra no banco de dados e limpar a lista?',
-      variant: 'success',
-      confirmText: 'Finalizar',
-      onConfirm: async () => {
-        const newPurchase = {
-          date: new Date().toISOString(),
-          total: totalCost,
-          itemCount: items.length,
-          items: [...items]
-        };
+    setSelectedPayment(null);
+    setIsFinishOpen(true);
+  };
 
-        // Salva localmente primeiro (instantâneo)
-        setHistory(prev => [newPurchase, ...prev]);
-        setItems([]);
-        setActiveTab('history');
+  const confirmFinishShopping = async () => {
+    if (!selectedPayment) return;
+    const newPurchase = {
+      date: new Date().toISOString(),
+      total: totalCost,
+      itemCount: items.length,
+      items: [...items],
+      budget: budget > 0 ? budget : null,
+      paymentMethod: selectedPayment
+    };
 
-        // Só sincroniza com o banco em produção
-        if (!import.meta.env.DEV) {
-          try {
-            const response = await fetch('/api/salvar-compra', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(newPurchase)
-            });
-            if (!response.ok) throw new Error('Erro ao salvar no banco');
-            console.info("Compra sincronizada com o banco com sucesso!");
-          } catch (error) {
-            console.warn("Falha na sincronização online. Os dados permanecem salvos no seu navegador.");
-          }
-        }
+    setHistory(prev => [newPurchase, ...prev]);
+    setItems([]);
+    setBudget(0);
+    setIsFinishOpen(false);
+    setActiveTab('history');
+
+    if (!import.meta.env.DEV) {
+      try {
+        const response = await fetch('/api/salvar-compra', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPurchase)
+        });
+        if (!response.ok) throw new Error('Erro ao salvar no banco');
+      } catch (_) {
+        console.warn("Falha na sincronização online.");
       }
-    });
+    }
   };
 
   const updateQuantity = (id, change) => {
@@ -319,8 +336,6 @@ const App = () => {
   };
 
   const HistoryView = () => {
-    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
-
     // Agrupamento por mês
     const groupedByMonth = useMemo(() => {
       const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -383,7 +398,9 @@ const App = () => {
                       </div>
 
                       {/* Compras do dia */}
-                      {dayData.purchases.map((purchase, idx) => (
+                      {dayData.purchases.map((purchase, idx) => {
+                        const pm = getPaymentInfo(purchase.paymentMethod);
+                        return (
                         <Card key={purchase.id || idx} className="mb-1.5">
                           <div className="p-3 flex items-center gap-3">
                             <div className="flex-1 cursor-pointer" onClick={() => setViewingPurchase(purchase)}>
@@ -392,6 +409,10 @@ const App = () => {
                                   {new Date(purchase.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                                 <span className="font-bold text-emerald-700 text-sm">{formatCurrency(purchase.total)}</span>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                {pm && <span className="flex items-center gap-1 text-[10px] font-semibold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">{pm.icon} {pm.label}</span>}
+                                {purchase.budget && <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md">Meta: {formatCurrency(purchase.budget)}</span>}
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-[11px] text-gray-400">{purchase.itemCount || purchase.items?.length} itens</span>
@@ -406,7 +427,8 @@ const App = () => {
                             </button>
                           </div>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   ))}
                 </div>
@@ -496,6 +518,39 @@ const App = () => {
         </div>
       )}
 
+      {/* MODAL: Finalizar Compra */}
+      {isFinishOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setIsFinishOpen(false)}>
+          <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl shadow-2xl animate-slideUp" onClick={e => e.stopPropagation()}>
+            <div className="p-5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-gray-800">Finalizar Compra</h3>
+                <button onClick={() => setIsFinishOpen(false)} className="p-2 bg-gray-100 rounded-full text-gray-500"><X size={20} /></button>
+              </div>
+              <div className="bg-emerald-50 rounded-2xl p-4 text-center mb-4">
+                <p className="text-emerald-600 font-bold text-xs uppercase mb-1">Total da Compra</p>
+                <p className="text-3xl font-bold text-emerald-800">{formatCurrency(totalCost)}</p>
+                <p className="text-xs text-emerald-600/60 mt-1">{items.length} itens</p>
+                {budget > 0 && (
+                  <div className={`mt-2 text-xs font-semibold ${remainingBudget >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                    Meta: {formatCurrency(budget)} · {remainingBudget >= 0 ? `Economia de ${formatCurrency(remainingBudget)}` : `Estourou ${formatCurrency(Math.abs(remainingBudget))}`}
+                  </div>
+                )}
+              </div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Forma de Pagamento</label>
+              <div className="grid grid-cols-2 gap-2 mb-5">
+                {PAYMENT_METHODS.map(method => (
+                  <button key={method.id} onClick={() => setSelectedPayment(method.id)} className={`p-3 rounded-xl border-2 flex items-center gap-2 transition-all text-sm font-semibold ${selectedPayment === method.id ? method.active : 'border-gray-100 bg-gray-50 text-gray-500'}`}>
+                    {method.icon} {method.label}
+                  </button>
+                ))}
+              </div>
+              <Button onClick={confirmFinishShopping} variant="success" className="w-full h-12 text-base font-bold" disabled={!selectedPayment}>Confirmar Compra</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: Detalhes */}
       {viewingPurchase && (
         <div className="fixed inset-0 z-50 bg-white animate-slideInRight overflow-hidden flex flex-col">
@@ -504,11 +559,30 @@ const App = () => {
              <div><h3 className="font-bold text-base text-gray-800">Resumo da Compra</h3><p className="text-[10px] font-semibold text-gray-400 uppercase">{formatDate(viewingPurchase.date)}</p></div>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
-             <div className="bg-emerald-50 rounded-2xl p-6 text-center mb-5">
+             <div className="bg-emerald-50 rounded-2xl p-6 text-center mb-4">
                 <p className="text-emerald-600 font-bold text-xs uppercase mb-1">Total Gasto</p>
                 <p className="text-3xl font-bold text-emerald-800">{formatCurrency(viewingPurchase.total)}</p>
                 <p className="text-xs text-emerald-600/60 mt-1">{viewingPurchase.itemCount || viewingPurchase.items?.length} itens</p>
              </div>
+             {(viewingPurchase.paymentMethod || viewingPurchase.budget) && (
+             <div className="flex gap-2 mb-5">
+               {(() => { const pm = getPaymentInfo(viewingPurchase.paymentMethod); return pm ? (
+                 <div className="flex-1 bg-gray-50 rounded-xl p-3 flex items-center gap-2 border border-gray-100">
+                   <span className="text-gray-500">{pm.icon}</span>
+                   <div><p className="text-[10px] text-gray-400 font-bold uppercase">Pagamento</p><p className="text-sm font-semibold text-gray-700">{pm.label}</p></div>
+                 </div>
+               ) : null; })()}
+               {viewingPurchase.budget && (
+                 <div className="flex-1 bg-amber-50 rounded-xl p-3 border border-amber-100">
+                   <p className="text-[10px] text-amber-500 font-bold uppercase">Meta</p>
+                   <p className="text-sm font-semibold text-amber-700">{formatCurrency(viewingPurchase.budget)}</p>
+                   <p className={`text-[10px] font-semibold mt-0.5 ${viewingPurchase.total <= viewingPurchase.budget ? 'text-emerald-600' : 'text-red-500'}`}>
+                     {viewingPurchase.total <= viewingPurchase.budget ? `Economizou ${formatCurrency(viewingPurchase.budget - viewingPurchase.total)}` : `Estourou ${formatCurrency(viewingPurchase.total - viewingPurchase.budget)}`}
+                   </p>
+                 </div>
+               )}
+             </div>
+             )}
              <div className="space-y-2">
                {viewingPurchase.items?.map((item, idx) => (
                  <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
