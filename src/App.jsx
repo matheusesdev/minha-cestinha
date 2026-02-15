@@ -141,6 +141,10 @@ const App = () => {
   const progressPercent = budget > 0 ? Math.min((totalCost / budget) * 100, 100) : 0;
 
   const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+  const formatWeight = (qty) => {
+    if (qty < 1) return { value: Math.round(qty * 1000), label: 'g' };
+    return { value: qty.toLocaleString('pt-BR', { minimumFractionDigits: 3 }), label: 'kg' };
+  };
   const formatDate = (isoString) => {
     try {
       const date = new Date(isoString);
@@ -285,7 +289,7 @@ const App = () => {
                     <span className="font-bold text-gray-900 text-sm shrink-0">{formatCurrency(item.price * item.quantity)}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 mb-2">
-                    <p className="text-xs text-gray-500">{formatCurrency(item.price)} <span className="text-[10px] text-gray-400">/{item.unit}</span></p>
+                    <p className="text-xs text-gray-500">{formatCurrency(item.price)} <span className="text-[10px] text-gray-400">/{item.unit === 'kg' ? 'kg' : item.unit}</span></p>
                     {hist && Math.abs(diff) > 0.01 && (
                       <div className={`text-[9px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${diff > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
                         {diff > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />} {diff > 0 ? '+' : ''}{formatCurrency(Math.abs(diff))}
@@ -296,8 +300,8 @@ const App = () => {
                     <div className="flex items-center gap-0.5 bg-gray-50 rounded-xl p-1 border border-gray-100">
                       <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center bg-white text-gray-600 rounded-lg shadow-sm active:bg-gray-100"><Minus size={14} /></button>
                       <div className="min-w-[3rem] text-center">
-                         <span className="text-sm font-bold text-gray-800">{item.unit === 'kg' ? item.quantity.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : item.quantity}</span>
-                         <span className="text-[9px] block font-semibold text-gray-400 uppercase leading-none">{item.unit}</span>
+                         <span className="text-sm font-bold text-gray-800">{item.unit === 'kg' ? formatWeight(item.quantity).value : item.quantity}</span>
+                         <span className="text-[9px] block font-semibold text-gray-400 uppercase leading-none">{item.unit === 'kg' ? formatWeight(item.quantity).label : item.unit}</span>
                       </div>
                       <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center bg-emerald-600 text-white rounded-lg shadow-sm active:bg-emerald-700"><Plus size={14} /></button>
                     </div>
@@ -598,7 +602,7 @@ const App = () => {
                  <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
                    <div className="flex items-center gap-3">
                       <div className="bg-white p-2 rounded-xl text-gray-400 shadow-sm">{CATEGORIES.find(c => c.id === item.category)?.icon || <ShoppingBasket size={16}/>}</div>
-                      <div><p className="font-semibold text-gray-800 text-sm">{item.name}</p><p className="text-[10px] text-gray-400">{item.quantity} {item.unit} x {formatCurrency(item.price)}</p></div>
+                      <div><p className="font-semibold text-gray-800 text-sm">{item.name}</p><p className="text-[10px] text-gray-400">{item.unit === 'kg' ? `${formatWeight(item.quantity).value}${formatWeight(item.quantity).label}` : item.quantity + ' ' + item.unit} x {formatCurrency(item.price)}</p></div>
                    </div>
                    <p className="font-bold text-gray-800 text-sm">{formatCurrency(item.price * item.quantity)}</p>
                  </div>
