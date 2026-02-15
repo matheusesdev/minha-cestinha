@@ -2,50 +2,81 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShoppingBasket, Trash2, Plus, Minus, Wallet, 
   PieChart, History, ChevronRight, CheckCircle2,
-  X, Edit2, TrendingUp, TrendingDown, Calendar
+  X, Edit2, TrendingUp, TrendingDown, Calendar, ArrowLeft
 } from 'lucide-react';
 
-// Importando nossos componentes separados
-import { Card } from './components/ui/Card';
-import { Button } from './components/ui/Button';
-import { CATEGORIES } from './data/categories';
+// --- Componentes de UI Reutilizáveis (Integrados para funcionar no navegador) ---
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${className}`}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, onClick, variant = "primary", className = "", ...props }) => {
+  const variants = {
+    primary: "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95",
+    secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95",
+    danger: "bg-red-50 text-red-500 hover:bg-red-100 active:scale-95",
+    ghost: "bg-transparent text-gray-500 hover:bg-gray-50",
+    success: "bg-green-600 text-white hover:bg-green-700 active:scale-95"
+  };
+  
+  return (
+    <button 
+      onClick={onClick} 
+      className={`font-medium transition-all duration-200 rounded-xl flex items-center justify-center gap-2 ${variants[variant] || variants.primary} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// --- Dados Estáticos ---
+
+const CATEGORIES = [
+  { id: 'geral', label: 'Geral', icon: <ShoppingBasket size={16} />, color: 'gray' },
+  { id: 'hortifruti', label: 'Hortifruti', icon: <Leaf size={16} />, color: 'green' },
+  { id: 'carnes', label: 'Carnes', icon: <Beef size={16} />, color: 'red' },
+  { id: 'laticinios', label: 'Laticínios', icon: <Milk size={16} />, color: 'blue' },
+  { id: 'limpeza', label: 'Limpeza', icon: <SprayCan size={16} />, color: 'indigo' },
+];
+
+// Ícones auxiliares para CATEGORIES
+import { Leaf, Beef, Milk, SprayCan } from 'lucide-react';
 
 const App = () => {
-  // Estado Global
+  // --- Estados Globais ---
   const [activeTab, setActiveTab] = useState('list');
   const [items, setItems] = useState(() => JSON.parse(localStorage.getItem('cestinha_items')) || []);
   const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('cestinha_history')) || []);
   const [budget, setBudget] = useState(() => parseFloat(localStorage.getItem('cestinha_budget')) || 0);
   
-  // Estado do Formulário
+  // --- Estados de Interface (Modais) ---
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isBudgetOpen, setIsBudgetOpen] = useState(false); // Novo modal de Meta
+  const [viewingPurchase, setViewingPurchase] = useState(null); // Novo modal de Detalhes do Histórico
   const [editingId, setEditingId] = useState(null);
   
-  // Estado inicial do formulário
-  const initialFormState = { 
-    name: '', 
-    price: 0, 
-    quantity: 1, 
-    unit: 'un', 
-    category: 'geral' 
-  };
+  // Estado do formulário de adição
+  const initialFormState = { name: '', price: 0, quantity: 1, unit: 'un', category: 'geral' };
   const [formData, setFormData] = useState(initialFormState);
 
-  // Persistência
+  // --- Persistência ---
   useEffect(() => { localStorage.setItem('cestinha_items', JSON.stringify(items)); }, [items]);
   useEffect(() => { localStorage.setItem('cestinha_history', JSON.stringify(history)); }, [history]);
   useEffect(() => { localStorage.setItem('cestinha_budget', budget.toString()); }, [budget]);
 
-  // Lógica de Negócio
+  // --- Lógica de Negócio ---
   const totalCost = useMemo(() => items.reduce((acc, item) => acc + (item.price * item.quantity), 0), [items]);
   const remainingBudget = budget - totalCost;
   const progressPercent = budget > 0 ? Math.min((totalCost / budget) * 100, 100) : 0;
 
   const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-
   const formatDate = (isoString) => {
     const date = new Date(isoString);
-    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }).format(date);
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }).format(date);
   };
 
   const getProductHistory = (productName) => {
@@ -58,16 +89,16 @@ const App = () => {
     return null;
   };
 
-  const handlePriceChange = (e) => {
+  // --- Handlers ---
+  const handlePriceChange = (e, setter = setFormData, currentData = formData) => {
     const rawValue = e.target.value.replace(/\D/g, ''); 
     const numericValue = rawValue ? parseFloat(rawValue) / 100 : 0;
-    setFormData({ ...formData, price: numericValue });
+    setter({ ...currentData, price: numericValue });
   };
 
   const handleSaveItem = (e) => {
     e.preventDefault();
     if (!formData.name || formData.price <= 0) return;
-
     const newItemData = { ...formData, quantity: parseFloat(formData.quantity) };
 
     if (editingId) {
@@ -76,7 +107,6 @@ const App = () => {
     } else {
       setItems([{ id: Date.now(), ...newItemData, createdAt: new Date().toISOString() }, ...items]);
     }
-    
     setFormData(initialFormState);
     setIsFormOpen(false);
   };
@@ -111,10 +141,10 @@ const App = () => {
   };
 
   // --- Views ---
-  // (Você pode mover estes componentes para arquivos separados na pasta /views no futuro)
-  
+
   const ListView = () => (
     <div className="space-y-4 pb-28 animate-fadeIn">
+      {/* Card de Resumo e Meta */}
       <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 border-none shadow-lg shadow-emerald-200">
         <div className="flex justify-between items-start mb-4">
           <div>
@@ -126,8 +156,8 @@ const App = () => {
           </div>
         </div>
         
-        {budget > 0 && (
-          <div className="space-y-2">
+        {budget > 0 ? (
+          <div className="space-y-2" onClick={() => setIsBudgetOpen(true)}>
             <div className="flex justify-between text-xs font-medium text-emerald-100">
               <span>Meta: {formatCurrency(budget)}</span>
               <span>Resta: {formatCurrency(remainingBudget)}</span>
@@ -139,9 +169,18 @@ const App = () => {
               />
             </div>
           </div>
+        ) : (
+          <button 
+            onClick={() => setIsBudgetOpen(true)}
+            className="text-xs bg-white/20 hover:bg-white/30 text-emerald-50 px-3 py-1.5 rounded-lg transition-colors w-full text-left flex items-center gap-2"
+          >
+            <Wallet size={14} />
+            Definir uma meta de gastos (opcional)
+          </button>
         )}
       </Card>
 
+      {/* Lista de Itens */}
       <div className="space-y-3">
         {items.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
@@ -224,26 +263,13 @@ const App = () => {
   );
 
   const HistoryView = () => {
-    const historyByMonth = useMemo(() => {
-      const groups = {};
-      history.forEach(purchase => {
-        const date = new Date(purchase.date);
-        const key = `${date.getMonth() + 1}/${date.getFullYear()}`;
-        if (!groups[key]) groups[key] = { total: 0, purchases: [], monthName: date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }) };
-        groups[key].total += purchase.total;
-        groups[key].purchases.push(purchase);
-      });
-      return Object.entries(groups).sort((a, b) => {
-        const [m1, y1] = a[0].split('/');
-        const [m2, y2] = b[0].split('/');
-        return new Date(y2, m2 - 1) - new Date(y1, m1 - 1);
-      });
-    }, [history]);
+    // Ordenar histórico do mais recente para o mais antigo
+    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
       <div className="space-y-6 pb-24 animate-fadeIn">
         <h2 className="text-2xl font-bold text-gray-800 px-2 flex items-center gap-2">
-          <History className="text-emerald-600" /> Histórico de Compras
+          <History className="text-emerald-600" /> Histórico
         </h2>
         {history.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
@@ -251,42 +277,30 @@ const App = () => {
             <p>Nenhuma compra finalizada ainda.</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {historyByMonth.map(([key, data], index) => {
-              const nextGroup = historyByMonth[index + 1];
-              const diff = nextGroup ? data.total - nextGroup[1].total : 0;
-              return (
-                <div key={key} className="space-y-3">
-                  <div className="flex items-center justify-between px-2">
-                    <h3 className="font-bold text-gray-500 capitalize">{data.monthName}</h3>
-                    {nextGroup && (
-                       <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${diff > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                         {diff > 0 ? <TrendingUp size={12}/> : <TrendingDown size={12}/>}
-                         {Math.abs((diff / nextGroup[1].total) * 100).toFixed(0)}% vs mês anterior
-                       </span>
-                    )}
-                  </div>
-                  <Card className="divide-y divide-gray-100 border-none shadow-md">
-                     <div className="p-4 bg-gray-50 flex justify-between items-center">
-                        <span className="text-sm text-gray-500">Total do Mês</span>
-                        <span className="text-lg font-bold text-gray-800">{formatCurrency(data.total)}</span>
-                     </div>
-                     {data.purchases.map(purchase => (
-                       <div key={purchase.id} className="p-4 hover:bg-gray-50 transition-colors">
-                         <div className="flex justify-between items-center mb-1">
-                           <span className="font-semibold text-gray-700">{formatDate(purchase.date)}</span>
-                           <span className="font-bold text-emerald-700">{formatCurrency(purchase.total)}</span>
-                         </div>
-                         <div className="flex justify-between items-center text-xs text-gray-400">
-                           <span>{purchase.itemCount} itens</span>
-                           <span className="flex items-center gap-1">Ver detalhes <ChevronRight size={12} /></span>
-                         </div>
-                       </div>
-                     ))}
-                  </Card>
-                </div>
-              );
-            })}
+          <div className="space-y-4">
+             {sortedHistory.map(purchase => (
+               <Card key={purchase.id} className="cursor-pointer hover:border-emerald-200 transition-colors">
+                 <div onClick={() => setViewingPurchase(purchase)} className="p-4">
+                   <div className="flex justify-between items-center mb-2">
+                     <span className="font-semibold text-gray-700">{formatDate(purchase.date)}</span>
+                     <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
+                       {formatCurrency(purchase.total)}
+                     </span>
+                   </div>
+                   <div className="flex justify-between items-center text-sm text-gray-500">
+                     <span>{purchase.itemCount} itens</span>
+                     <span className="flex items-center gap-1 text-emerald-600 font-medium text-xs">
+                       Ver detalhes <ChevronRight size={14} />
+                     </span>
+                   </div>
+                   {/* Preview rápido de 3 itens */}
+                   <div className="mt-3 pt-3 border-t border-gray-50 text-xs text-gray-400 truncate">
+                      {purchase.items.slice(0, 3).map(i => i.name).join(', ')}
+                      {purchase.items.length > 3 && ` e mais ${purchase.items.length - 3}...`}
+                   </div>
+                 </div>
+               </Card>
+             ))}
           </div>
         )}
       </div>
@@ -303,7 +317,7 @@ const App = () => {
     return (
       <div className="space-y-6 pb-24 animate-fadeIn">
         <h2 className="text-2xl font-bold text-gray-800 px-2 flex items-center gap-2">
-           <PieChart className="text-emerald-600" /> Análise da Cesta Atual
+           <PieChart className="text-emerald-600" /> Análise Atual
         </h2>
         {stats.length === 0 ? (
           <div className="text-center py-20 text-gray-400">Adicione itens na cestinha para ver a análise.</div>
@@ -337,7 +351,7 @@ const App = () => {
     );
   };
 
-  // --- Renderização Principal do App ---
+  // --- Renderização Principal ---
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
@@ -361,7 +375,7 @@ const App = () => {
         {activeTab === 'history' && <HistoryView />}
       </main>
 
-      {/* FAB (Botão Flutuante) */}
+      {/* FAB */}
       {activeTab === 'list' && (
         <button
           onClick={() => { setEditingId(null); setFormData(initialFormState); setIsFormOpen(true); }}
@@ -371,7 +385,7 @@ const App = () => {
         </button>
       )}
 
-      {/* Modal / Sheet do Formulário */}
+      {/* MODAL 1: Formulário de Item */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn" onClick={() => setIsFormOpen(false)}>
           <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-slideUp" onClick={e => e.stopPropagation()}>
@@ -381,7 +395,7 @@ const App = () => {
                 <X size={20} className="text-gray-500" />
               </button>
             </div>
-
+            {/* ... Conteúdo do Form Mantido ... */}
             <form onSubmit={handleSaveItem} className="space-y-4">
               <div className="bg-gray-100 p-1 rounded-xl flex">
                 <button type="button" onClick={() => setFormData({ ...formData, unit: 'un', quantity: Math.ceil(formData.quantity) })} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${formData.unit === 'un' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500'}`}>Unidade (un)</button>
@@ -391,29 +405,20 @@ const App = () => {
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome do Produto</label>
                 <input autoFocus type="text" placeholder="Ex: Alcatra" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-lg font-medium" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
-                {formData.name.length > 2 && getProductHistory(formData.name) && (
-                   <div className="mt-2 text-xs text-gray-500 flex items-center gap-1 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
-                     <History size={12} className="text-yellow-600"/>
-                     Último preço pago: <strong>{formatCurrency(getProductHistory(formData.name).price)}</strong>
-                   </div>
-                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Preço {formData.unit === 'kg' ? 'do Kg' : 'Unitário'}</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Preço</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
-                    <input type="text" inputMode="numeric" placeholder="0,00" className="w-full p-4 pl-10 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-lg font-medium" value={formData.price > 0 ? formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''} onChange={handlePriceChange} />
+                    <input type="text" inputMode="numeric" className="w-full p-4 pl-10 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-lg font-medium" value={formData.price > 0 ? formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''} onChange={handlePriceChange} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{formData.unit === 'kg' ? 'Peso (Kg)' : 'Qtd (Un)'}</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Qtd / Peso</label>
                   {formData.unit === 'kg' ? (
-                     <div className="relative">
-                        <input type="number" step="0.001" placeholder="0.000" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-lg font-medium" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">kg</span>
-                     </div>
+                     <input type="number" step="0.001" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-lg font-medium" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
                   ) : (
                     <div className="flex items-center h-[60px] bg-gray-50 border border-gray-200 rounded-xl px-2">
                       <button type="button" onClick={() => setFormData(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))} className="p-2 text-gray-400 hover:text-emerald-600"><Minus size={20} /></button>
@@ -438,9 +443,118 @@ const App = () => {
               
               <div className="pt-2 flex gap-3">
                 {editingId && <Button type="button" variant="danger" className="flex-1 py-4 rounded-xl" onClick={() => { handleDelete(editingId); setIsFormOpen(false); }}>Excluir</Button>}
-                <Button type="submit" className="flex-[2] py-4 rounded-xl text-lg shadow-lg shadow-emerald-200">{editingId ? 'Salvar Alterações' : 'Adicionar à Cestinha'}</Button>
+                <Button type="submit" className="flex-[2] py-4 rounded-xl text-lg shadow-lg shadow-emerald-200">{editingId ? 'Salvar' : 'Adicionar'}</Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Definir Meta (Substitui o prompt) */}
+      {isBudgetOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn" onClick={() => setIsBudgetOpen(false)}>
+          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-slideUp" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <Wallet className="text-emerald-600" /> Definir Meta
+              </h3>
+              <button onClick={() => setIsBudgetOpen(false)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="text-center">
+                <label className="text-sm text-gray-500 mb-2 block">Quanto você pretende gastar?</label>
+                <div className="relative inline-block w-full">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">R$</span>
+                  <input 
+                    autoFocus
+                    type="text" 
+                    inputMode="numeric"
+                    className="w-full bg-gray-50 border-2 border-emerald-100 rounded-2xl p-6 pl-14 text-4xl font-bold text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all text-center"
+                    placeholder="0,00"
+                    value={budget > 0 ? budget.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''}
+                    onChange={(e) => {
+                       const rawValue = e.target.value.replace(/\D/g, ''); 
+                       const numericValue = rawValue ? parseFloat(rawValue) / 100 : 0;
+                       setBudget(numericValue);
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button 
+                  variant="secondary" 
+                  className="flex-1 py-4 rounded-xl" 
+                  onClick={() => { setBudget(0); setIsBudgetOpen(false); }}
+                >
+                  Limpar Meta
+                </Button>
+                <Button 
+                  className="flex-[2] py-4 rounded-xl shadow-lg shadow-emerald-200" 
+                  onClick={() => setIsBudgetOpen(false)}
+                >
+                  Salvar Meta
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Detalhes do Histórico */}
+      {viewingPurchase && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm animate-fadeIn" onClick={() => setViewingPurchase(null)}>
+          <div className="bg-white w-full max-w-md h-full shadow-2xl overflow-y-auto animate-slideInRight" onClick={e => e.stopPropagation()}>
+            
+            {/* Header Sticky */}
+            <div className="sticky top-0 bg-white z-10 border-b border-gray-100 p-4 flex items-center gap-3">
+               <button onClick={() => setViewingPurchase(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                 <ArrowLeft size={20} className="text-gray-600" />
+               </button>
+               <div>
+                 <h3 className="font-bold text-gray-800">Detalhes da Compra</h3>
+                 <p className="text-xs text-gray-500">{formatDate(viewingPurchase.date)}</p>
+               </div>
+            </div>
+
+            <div className="p-4 space-y-6">
+               {/* Resumo */}
+               <div className="bg-emerald-50 rounded-xl p-6 text-center">
+                  <p className="text-emerald-600 font-medium mb-1">Total Pago</p>
+                  <p className="text-4xl font-bold text-emerald-800">{formatCurrency(viewingPurchase.total)}</p>
+                  <p className="text-sm text-emerald-600/70 mt-2">{viewingPurchase.itemCount} itens</p>
+               </div>
+
+               {/* Lista de Produtos */}
+               <div>
+                 <h4 className="font-bold text-gray-700 mb-3 px-1">Itens Comprados</h4>
+                 <div className="space-y-2">
+                   {viewingPurchase.items.map((item, idx) => (
+                     <div key={idx} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
+                       <div className="flex items-center gap-3">
+                          <div className="bg-gray-100 p-2 rounded-lg text-gray-500">
+                             {CATEGORIES.find(c => c.id === item.category)?.icon || <ShoppingBasket size={16}/>}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800">{item.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {item.quantity} {item.unit} x {formatCurrency(item.price)}
+                            </p>
+                          </div>
+                       </div>
+                       <p className="font-bold text-gray-700">{formatCurrency(item.price * item.quantity)}</p>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-100 safe-bottom">
+               <Button variant="secondary" className="w-full py-4" onClick={() => setViewingPurchase(null)}>Fechar</Button>
+            </div>
           </div>
         </div>
       )}
@@ -456,10 +570,16 @@ const App = () => {
         <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 p-2 transition-colors ${activeTab === 'history' ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <History size={24} strokeWidth={activeTab === 'history' ? 2.5 : 2} /> <span className="text-[10px] font-medium">Histórico</span>
         </button>
-        <button onClick={() => { const novoBudget = prompt('Definir meta de gastos:', budget); if (novoBudget !== null) setBudget(parseFloat(novoBudget) || 0); }} className={`flex flex-col items-center gap-1 p-2 transition-colors ${budget > 0 ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}>
+        <button onClick={() => setIsBudgetOpen(true)} className={`flex flex-col items-center gap-1 p-2 transition-colors ${budget > 0 ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <Wallet size={24} /> <span className="text-[10px] font-medium">Meta</span>
         </button>
       </nav>
+      
+      {/* Estilos Extras para o Modal Lateral */}
+      <style>{`
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .animate-slideInRight { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+      `}</style>
     </div>
   );
 };
