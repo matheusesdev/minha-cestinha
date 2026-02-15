@@ -489,7 +489,11 @@ const App = () => {
                   </div>
                   <div className="flex-[2]">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 text-center">{formData.unit === 'kg' ? 'Peso (Kg)' : 'Quant.'}</label>
-                    <input type="number" step={formData.unit === 'kg' ? "0.001" : "1"} min={formData.unit === 'kg' ? "0.001" : "1"} placeholder={formData.unit === 'kg' ? '0,500' : '1'} className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none text-base font-semibold text-center" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
+                    {formData.unit === 'kg' ? (
+                      <input type="tel" inputMode="decimal" placeholder="Ex: 1,500" className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none text-base font-semibold text-center" value={formData.quantity === 1 && !formData._kgEdited ? '' : String(formData.quantity).replace('.', ',')} onChange={e => { const raw = e.target.value.replace(',', '.').replace(/[^0-9.]/g, ''); setFormData({ ...formData, quantity: raw, _kgEdited: true }); }} />
+                    ) : (
+                      <input type="number" step="1" min="1" placeholder="1" className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none text-base font-semibold text-center" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
+                    )}
                   </div>
                 </div>
                 <Button type="submit" className="w-full h-12 text-base font-bold mt-2">Guardar Produto</Button>
