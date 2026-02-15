@@ -481,15 +481,15 @@ const App = () => {
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-[3]">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Preço</label>
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">{formData.unit === 'kg' ? 'Preço/Kg' : 'Preço'}</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold text-sm">R$</span>
                       <input type="tel" inputMode="numeric" className="w-full p-4 pl-11 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-xl outline-none text-base font-semibold" value={formData.price ? formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''} onChange={handlePriceChange} />
                     </div>
                   </div>
                   <div className="flex-[2]">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 text-center">Quant.</label>
-                    <input type="number" step={formData.unit === 'kg' ? "0.001" : "1"} className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none text-base font-semibold text-center" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 text-center">{formData.unit === 'kg' ? 'Peso (Kg)' : 'Quant.'}</label>
+                    <input type="number" step={formData.unit === 'kg' ? "0.001" : "1"} min={formData.unit === 'kg' ? "0.001" : "1"} placeholder={formData.unit === 'kg' ? '0,500' : '1'} className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none text-base font-semibold text-center" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
                   </div>
                 </div>
                 <Button type="submit" className="w-full h-12 text-base font-bold mt-2">Guardar Produto</Button>
