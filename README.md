@@ -49,7 +49,7 @@ Este projeto foi desenvolvido com as tecnologias mais modernas do ecossistema Re
 
 Para rodar este projeto localmente, você precisará ter o [Node.js](https://nodejs.org/) instalado em sua máquina.
 
-1.  git clone \[https://github.com/SEU\_USUARIO/minha-cestinha.git\](https://github.com/SEU\_USUARIO/minha-cestinha.git)
+1.  git clone https://github.com/matheusesdev/minha-cestinha.git
     
 2.  cd minha-cestinha
     
@@ -57,13 +57,20 @@ Para rodar este projeto localmente, você precisará ter o [Node.js](https://nod
     
 4.  npm run dev
     
-5.  **Acesse no navegador:**O projeto estará rodando em http://localhost:5173 (ou a porta indicada no terminal).
+5.  **Acesse no navegador:** O projeto estará rodando em http://localhost:5173 (ou a porta indicada no terminal).
     
 
 🛠️ Estrutura de Pastas
 -----------------------
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   src/  ├── components/      # Componentes de UI (Botões, Cards, Modais)  ├── data/            # Dados estáticos (Categorias)  ├── App.jsx          # Lógica principal e Views  ├── main.jsx         # Ponto de entrada  └── index.css        # Estilos globais e Tailwind   `
+```
+src/
+├── components/      # Componentes de UI (Botões, Cards, Modais)
+├── data/            # Dados estáticos (Categorias)
+├── App.jsx          # Lógica principal e Views
+├── main.jsx         # Ponto de entrada
+└── index.css        # Estilos globais e Tailwind
+```
 
 📱 Instalação no Celular (PWA)
 ------------------------------
@@ -98,6 +105,6 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir uma issue ou env
 📄 Licença
 ----------
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](https://www.google.com/search?q=LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 Feito com 💚 para ajudar nas compras do mês.
