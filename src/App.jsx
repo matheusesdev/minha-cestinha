@@ -217,36 +217,36 @@ const App = () => {
   // --- Views ---
 
   const ListView = () => (
-    <div className="space-y-5 pb-32 animate-fadeIn">
-      <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 border-none shadow-xl shadow-emerald-200/50">
-        <div className="flex justify-between items-start mb-6">
+    <div className="space-y-3 pb-28 animate-fadeIn">
+      <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 border-none shadow-lg shadow-emerald-200/40">
+        <div className="flex justify-between items-start mb-3">
           <div>
-            <p className="text-emerald-100 text-sm font-medium mb-1 uppercase tracking-wider">Total Atual</p>
-            <h2 className="text-5xl font-bold tracking-tight">{formatCurrency(totalCost)}</h2>
+            <p className="text-emerald-100 text-[11px] font-medium uppercase tracking-wider">Total Atual</p>
+            <h2 className="text-3xl font-bold tracking-tight">{formatCurrency(totalCost)}</h2>
           </div>
-          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md"><ShoppingBasket size={26} className="text-white" /></div>
+          <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md"><ShoppingBasket size={20} className="text-white" /></div>
         </div>
         {budget > 0 ? (
-          <div className="space-y-3 cursor-pointer active:opacity-80 transition-opacity" onClick={() => setIsBudgetOpen(true)}>
-            <div className="flex justify-between text-xs font-bold text-emerald-50 uppercase tracking-widest">
+          <div className="space-y-1.5 cursor-pointer active:opacity-80 transition-opacity" onClick={() => setIsBudgetOpen(true)}>
+            <div className="flex justify-between text-[10px] font-bold text-emerald-50 uppercase tracking-wider">
               <span>Meta: {formatCurrency(budget)}</span>
               <span className={remainingBudget < 0 ? 'text-red-200 font-black' : ''}>Resta: {formatCurrency(remainingBudget)}</span>
             </div>
-            <div className="h-3 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
-              <div className={`h-full transition-all duration-1000 ease-out ${remainingBudget < 0 ? 'bg-red-400' : 'bg-white shadow-[0_0_8px_white]'}`} style={{ width: `${progressPercent}%` }} />
+            <div className="h-2 bg-black/20 rounded-full overflow-hidden">
+              <div className={`h-full transition-all duration-1000 ease-out ${remainingBudget < 0 ? 'bg-red-400' : 'bg-white'}`} style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         ) : (
-          <button onClick={() => setIsBudgetOpen(true)} className="text-sm bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-2xl transition-all w-full text-left flex items-center gap-2 border border-white/10 font-semibold"><Wallet size={18} /> Definir limite de gastos</button>
+          <button onClick={() => setIsBudgetOpen(true)} className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl transition-all w-full text-left flex items-center gap-2 border border-white/10 font-medium"><Wallet size={14} /> Definir limite de gastos</button>
         )}
       </Card>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {items.length === 0 ? (
-          <div className="text-center py-24 px-6 bg-white rounded-3xl border border-dashed border-gray-200">
-            <ShoppingBasket size={44} className="text-gray-200 mx-auto mb-4" />
-            <h3 className="text-gray-800 font-bold text-xl mb-1">Cestinha Vazia</h3>
-            <p className="text-gray-400 text-sm">Toque no + para adicionar produtos.</p>
+          <div className="text-center py-16 px-4 bg-white rounded-2xl border border-dashed border-gray-200">
+            <ShoppingBasket size={32} className="text-gray-200 mx-auto mb-3" />
+            <h3 className="text-gray-700 font-bold text-base mb-0.5">Cestinha Vazia</h3>
+            <p className="text-gray-400 text-xs">Toque no + para adicionar produtos.</p>
           </div>
         ) : (
           items.map(item => {
@@ -254,33 +254,33 @@ const App = () => {
             const hist = getProductHistory(item.name);
             const diff = hist ? item.price - hist.price : 0;
             return (
-              <div key={item.id} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-4 items-start active:scale-[0.98] transition-all">
-                <div className={`p-4 rounded-2xl shrink-0 bg-${cat.color}-50 text-${cat.color}-600 shadow-inner`}>{cat.icon}</div>
+              <div key={item.id} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-3 items-start active:scale-[0.98] transition-all">
+                <div className={`p-2.5 rounded-xl shrink-0 bg-${cat.color}-50 text-${cat.color}-600`}>{cat.icon}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-gray-800 text-lg truncate pr-1">{item.name}</h3>
-                    <span className="font-extrabold text-gray-900 text-lg">{formatCurrency(item.price * item.quantity)}</span>
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-gray-800 text-sm truncate pr-1">{item.name}</h3>
+                    <span className="font-bold text-gray-900 text-sm shrink-0">{formatCurrency(item.price * item.quantity)}</span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
-                    <p className="text-sm text-gray-500 font-bold">{formatCurrency(item.price)} <span className="text-xs text-gray-400 font-normal">/{item.unit}</span></p>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 mb-2">
+                    <p className="text-xs text-gray-500">{formatCurrency(item.price)} <span className="text-[10px] text-gray-400">/{item.unit}</span></p>
                     {hist && Math.abs(diff) > 0.01 && (
-                      <div className={`text-[10px] font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-full ${diff > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                        {diff > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />} {diff > 0 ? '+' : ''}{formatCurrency(Math.abs(diff))}
+                      <div className={`text-[9px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${diff > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                        {diff > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />} {diff > 0 ? '+' : ''}{formatCurrency(Math.abs(diff))}
                       </div>
                     )}
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-1 bg-gray-50 rounded-2xl p-1.5 border border-gray-100 shadow-inner">
-                      <button onClick={() => updateQuantity(item.id, -1)} className="w-10 h-10 flex items-center justify-center bg-white text-gray-600 rounded-xl shadow-sm active:bg-gray-100"><Minus size={18} /></button>
-                      <div className="min-w-[4rem] text-center">
-                         <span className="text-base font-extrabold text-gray-800">{item.unit === 'kg' ? item.quantity.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : item.quantity}</span>
-                         <span className="text-[10px] block font-bold text-gray-400 uppercase leading-none">{item.unit}</span>
+                    <div className="flex items-center gap-0.5 bg-gray-50 rounded-xl p-1 border border-gray-100">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center bg-white text-gray-600 rounded-lg shadow-sm active:bg-gray-100"><Minus size={14} /></button>
+                      <div className="min-w-[3rem] text-center">
+                         <span className="text-sm font-bold text-gray-800">{item.unit === 'kg' ? item.quantity.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : item.quantity}</span>
+                         <span className="text-[9px] block font-semibold text-gray-400 uppercase leading-none">{item.unit}</span>
                       </div>
-                      <button onClick={() => updateQuantity(item.id, 1)} className="w-10 h-10 flex items-center justify-center bg-emerald-600 text-white rounded-xl shadow-sm active:bg-emerald-700"><Plus size={18} /></button>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center bg-emerald-600 text-white rounded-lg shadow-sm active:bg-emerald-700"><Plus size={14} /></button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => { setFormData({ ...item }); setEditingId(item.id); setIsFormOpen(true); }} className="p-3 text-gray-400 bg-gray-50 rounded-2xl hover:text-emerald-600"><Edit2 size={20} /></button>
-                      <button onClick={() => setConfirmModal({ isOpen: true, title: 'Remover?', message: `Remover ${item.name}?`, onConfirm: () => setItems(items.filter(i => i.id !== item.id)) })} className="p-3 text-gray-400 bg-gray-50 rounded-2xl hover:text-red-500"><Trash2 size={20} /></button>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => { setFormData({ ...item }); setEditingId(item.id); setIsFormOpen(true); }} className="p-2 text-gray-400 bg-gray-50 rounded-xl hover:text-emerald-600"><Edit2 size={16} /></button>
+                      <button onClick={() => setConfirmModal({ isOpen: true, title: 'Remover?', message: `Remover ${item.name}?`, onConfirm: () => setItems(items.filter(i => i.id !== item.id)) })} className="p-2 text-gray-400 bg-gray-50 rounded-xl hover:text-red-500"><Trash2 size={16} /></button>
                     </div>
                   </div>
                 </div>
@@ -288,54 +288,142 @@ const App = () => {
             );
           })
         )}
-        {items.length > 0 && <Button onClick={finishShopping} variant="success" className="w-full mt-8 h-16 text-xl font-bold uppercase tracking-wide">Finalizar Compra</Button>}
+        {items.length > 0 && <Button onClick={finishShopping} variant="success" className="w-full mt-4 h-12 text-base font-bold">Finalizar Compra</Button>}
       </div>
     </div>
   );
 
-  const HistoryView = () => (
-    <div className="space-y-6 pb-24 animate-fadeIn">
-      <div className="flex justify-between items-center px-2">
-         <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><History size={28} className="text-emerald-600" /> Histórico</h2>
-         <button onClick={fetchHistoryFromDb} className="p-2 text-emerald-600 bg-emerald-50 rounded-xl active:rotate-180 transition-all duration-500"><Plus className="rotate-45" size={20} /></button>
-      </div>
-      {loadingHistory ? (
-        <div className="py-24 text-center">
-           <div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-           <p className="text-gray-400 font-bold uppercase text-xs tracking-widest tracking-widest">Sincronizando...</p>
+  const deletePurchase = (purchaseToDelete) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Excluir compra?',
+      message: `Remover a compra de ${formatCurrency(purchaseToDelete.total)}?`,
+      variant: 'danger',
+      confirmText: 'Excluir',
+      onConfirm: () => {
+        const updated = history.filter(h => h !== purchaseToDelete && (h.id !== purchaseToDelete.id || h.date !== purchaseToDelete.date));
+        setHistory(updated);
+      }
+    });
+  };
+
+  const clearAllHistory = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Limpar histórico?',
+      message: 'Isso removerá todas as compras salvas. Esta ação não pode ser desfeita.',
+      variant: 'danger',
+      confirmText: 'Limpar tudo',
+      onConfirm: () => setHistory([])
+    });
+  };
+
+  const HistoryView = () => {
+    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Agrupamento por mês
+    const groupedByMonth = useMemo(() => {
+      const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const groups = {};
+      sorted.forEach(purchase => {
+        const d = new Date(purchase.date);
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const monthLabel = d.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+        const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const dayLabel = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+
+        if (!groups[monthKey]) groups[monthKey] = { label: monthLabel, total: 0, days: {} };
+        groups[monthKey].total += purchase.total;
+
+        if (!groups[monthKey].days[dayKey]) groups[monthKey].days[dayKey] = { label: dayLabel, total: 0, purchases: [] };
+        groups[monthKey].days[dayKey].total += purchase.total;
+        groups[monthKey].days[dayKey].purchases.push(purchase);
+      });
+      return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+    }, [history]);
+
+    return (
+      <div className="space-y-4 pb-24 animate-fadeIn">
+        <div className="flex justify-between items-center px-1">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><History size={22} className="text-emerald-600" /> Histórico</h2>
+          {history.length > 0 && (
+            <button onClick={clearAllHistory} className="text-xs text-red-400 hover:text-red-600 font-semibold flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors">
+              <Trash2 size={13} /> Limpar
+            </button>
+          )}
         </div>
-      ) : history.length === 0 ? (
-        <div className="text-center py-24 bg-white rounded-3xl border border-gray-100">
-          <Calendar size={48} className="mx-auto mb-4 opacity-10" />
-          <p className="text-gray-400 font-medium">Nenhuma compra salva.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {[...history].sort((a, b) => new Date(b.date) - new Date(a.date)).map(purchase => (
-            <Card key={purchase.id || Math.random()} className="active:scale-[0.97] transition-transform duration-200 cursor-pointer" onClick={() => setViewingPurchase(purchase)}>
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="font-bold text-gray-600 text-lg">{formatDate(purchase.date)}</span>
-                  <span className="font-black text-emerald-700 bg-emerald-50 px-4 py-2 rounded-2xl">{formatCurrency(purchase.total)}</span>
+
+        {loadingHistory ? (
+          <div className="py-16 text-center">
+            <div className="animate-spin w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto mb-3"></div>
+            <p className="text-gray-400 font-medium text-xs uppercase tracking-wider">Sincronizando...</p>
+          </div>
+        ) : history.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <Calendar size={36} className="mx-auto mb-3 opacity-10" />
+            <p className="text-gray-400 text-sm">Nenhuma compra salva.</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {groupedByMonth.map(([monthKey, monthData]) => (
+              <div key={monthKey}>
+                {/* Cabeçalho do mês */}
+                <div className="flex justify-between items-center mb-2 px-1">
+                  <h3 className="text-sm font-bold text-gray-700 capitalize">{monthData.label}</h3>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">{formatCurrency(monthData.total)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold text-gray-400 bg-gray-50 px-3 py-1 rounded-xl">{purchase.itemCount || purchase.items?.length} Itens</span>
-                  <span className="flex items-center gap-1 text-emerald-600 font-black text-xs uppercase tracking-widest">Ver Detalhes <ChevronRight size={16} /></span>
+
+                <div className="space-y-2">
+                  {Object.entries(monthData.days).sort((a, b) => b[0].localeCompare(a[0])).map(([dayKey, dayData]) => (
+                    <div key={dayKey}>
+                      {/* Cabeçalho do dia */}
+                      <div className="flex justify-between items-center mb-1 px-1">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">{dayData.label}</span>
+                        <span className="text-[11px] font-semibold text-gray-400">{formatCurrency(dayData.total)}</span>
+                      </div>
+
+                      {/* Compras do dia */}
+                      {dayData.purchases.map((purchase, idx) => (
+                        <Card key={purchase.id || idx} className="mb-1.5">
+                          <div className="p-3 flex items-center gap-3">
+                            <div className="flex-1 cursor-pointer" onClick={() => setViewingPurchase(purchase)}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs text-gray-500 font-medium">
+                                  {new Date(purchase.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <span className="font-bold text-emerald-700 text-sm">{formatCurrency(purchase.total)}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[11px] text-gray-400">{purchase.itemCount || purchase.items?.length} itens</span>
+                                <span className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">Ver detalhes <ChevronRight size={12} /></span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); deletePurchase(purchase); }}
+                              className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50/50 font-sans text-gray-900 md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
-      <div className="sticky top-0 bg-white/90 backdrop-blur-md z-30 border-b border-gray-100 px-5 py-5 flex justify-between items-center shadow-sm">
-        <div className="flex items-center gap-3">
-            <div className="bg-emerald-100 p-2.5 rounded-2xl text-emerald-700 shadow-sm"><ShoppingBasket size={24} /></div>
-            <h1 className="font-black text-2xl text-gray-800 tracking-tighter">Minha Cestinha</h1>
+      <div className="sticky top-0 bg-white/90 backdrop-blur-md z-30 border-b border-gray-100 px-4 py-3 flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-2">
+            <div className="bg-emerald-100 p-2 rounded-xl text-emerald-700"><ShoppingBasket size={20} /></div>
+            <h1 className="font-bold text-lg text-gray-800 tracking-tight">Minha Cestinha</h1>
         </div>
       </div>
 
@@ -346,43 +434,43 @@ const App = () => {
       </main>
 
       {activeTab === 'list' && (
-        <button onClick={() => { setEditingId(null); setFormData(initialFormState); setIsFormOpen(true); }} className="fixed bottom-28 right-5 md:right-[calc(50%-12rem)] w-16 h-16 bg-emerald-600 text-white rounded-3xl shadow-2xl shadow-emerald-400 flex items-center justify-center active:scale-90 transition-all z-40">
-          <Plus size={36} strokeWidth={2.5} />
+        <button onClick={() => { setEditingId(null); setFormData(initialFormState); setIsFormOpen(true); }} className="fixed bottom-24 right-4 md:right-[calc(50%-12rem)] w-14 h-14 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-400/30 flex items-center justify-center active:scale-90 transition-all z-40">
+          <Plus size={28} strokeWidth={2.5} />
         </button>
       )}
 
       {/* MODAL: Formulário */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setIsFormOpen(false)}>
-          <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] shadow-2xl animate-slideUp flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="p-8 overflow-y-auto">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-2xl font-black text-gray-800">{editingId ? 'Editar Item' : 'Novo Item'}</h3>
-                <button onClick={() => setIsFormOpen(false)} className="p-2.5 bg-gray-100 rounded-full text-gray-500"><X size={24} /></button>
+          <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl shadow-2xl animate-slideUp flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="p-5 overflow-y-auto">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg font-bold text-gray-800">{editingId ? 'Editar Item' : 'Novo Item'}</h3>
+                <button onClick={() => setIsFormOpen(false)} className="p-2 bg-gray-100 rounded-full text-gray-500"><X size={20} /></button>
               </div>
-              <form onSubmit={handleSaveItem} className="space-y-6 pb-12">
-                <div className="bg-gray-100 p-1.5 rounded-[20px] flex">
-                  <button type="button" onClick={() => setFormData({ ...formData, unit: 'un', quantity: Math.ceil(formData.quantity) })} className={`flex-1 py-3 rounded-2xl text-sm font-black uppercase transition-all ${formData.unit === 'un' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}>Unidade</button>
-                  <button type="button" onClick={() => setFormData({ ...formData, unit: 'kg' })} className={`flex-1 py-3 rounded-2xl text-sm font-black uppercase transition-all ${formData.unit === 'kg' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}>Peso (Kg)</button>
+              <form onSubmit={handleSaveItem} className="space-y-4 pb-6">
+                <div className="bg-gray-100 p-1 rounded-xl flex">
+                  <button type="button" onClick={() => setFormData({ ...formData, unit: 'un', quantity: Math.ceil(formData.quantity) })} className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase transition-all ${formData.unit === 'un' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}>Unidade</button>
+                  <button type="button" onClick={() => setFormData({ ...formData, unit: 'kg' })} className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase transition-all ${formData.unit === 'kg' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}>Peso (Kg)</button>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Nome do Produto</label>
-                  <input autoFocus type="text" placeholder="Ex: Batata" className="w-full p-5 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-[20px] outline-none text-lg font-bold shadow-inner" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Nome do Produto</label>
+                  <input autoFocus type="text" placeholder="Ex: Batata" className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-xl outline-none text-base font-semibold" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <div className="flex-[3]">
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Preço</label>
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Preço</label>
                     <div className="relative">
-                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-lg">R$</span>
-                      <input type="tel" inputMode="numeric" className="w-full p-5 pl-12 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-[20px] outline-none text-lg font-bold" value={formData.price ? formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''} onChange={handlePriceChange} />
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold text-sm">R$</span>
+                      <input type="tel" inputMode="numeric" className="w-full p-4 pl-11 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-xl outline-none text-base font-semibold" value={formData.price ? formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''} onChange={handlePriceChange} />
                     </div>
                   </div>
                   <div className="flex-[2]">
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 text-center">Quant.</label>
-                    <input type="number" step={formData.unit === 'kg' ? "0.001" : "1"} className="w-full p-5 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-[20px] outline-none text-lg font-bold text-center" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 text-center">Quant.</label>
+                    <input type="number" step={formData.unit === 'kg' ? "0.001" : "1"} className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none text-base font-semibold text-center" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} />
                   </div>
                 </div>
-                <Button type="submit" className="w-full h-16 text-xl font-bold uppercase tracking-widest mt-4 shadow-xl">Guardar Produto</Button>
+                <Button type="submit" className="w-full h-12 text-base font-bold mt-2">Guardar Produto</Button>
               </form>
             </div>
           </div>
@@ -392,17 +480,17 @@ const App = () => {
       {/* MODAL: Meta */}
       {isBudgetOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setIsBudgetOpen(false)}>
-          <div className="bg-white w-full max-w-md rounded-t-[40px] p-8 shadow-2xl animate-slideUp" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-10">
-              <h3 className="text-2xl font-black flex items-center gap-3 text-gray-800"><Wallet className="text-emerald-600" size={28} /> Definir Meta</h3>
-              <button onClick={() => setIsBudgetOpen(false)} className="p-2.5 bg-gray-100 rounded-full"><X size={24} /></button>
+          <div className="bg-white w-full max-w-md rounded-t-3xl p-5 shadow-2xl animate-slideUp" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold flex items-center gap-2 text-gray-800"><Wallet className="text-emerald-600" size={22} /> Definir Meta</h3>
+              <button onClick={() => setIsBudgetOpen(false)} className="p-2 bg-gray-100 rounded-full"><X size={20} /></button>
             </div>
-            <div className="text-center space-y-10 pb-10">
-              <div className="relative inline-block w-full max-w-[240px]">
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-black text-gray-300">R$</span>
-                <input autoFocus type="tel" inputMode="numeric" className="w-full bg-transparent border-b-4 border-gray-100 py-4 pl-12 text-5xl font-black text-center focus:border-emerald-500 outline-none placeholder:text-gray-100 text-gray-800" placeholder="0,00" value={budget > 0 ? budget.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''} onChange={e => { const raw = e.target.value.replace(/\D/g, ''); setBudget(raw ? parseFloat(raw)/100 : 0); }} />
+            <div className="text-center space-y-6 pb-6">
+              <div className="relative inline-block w-full max-w-[200px]">
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-300">R$</span>
+                <input autoFocus type="tel" inputMode="numeric" className="w-full bg-transparent border-b-3 border-gray-100 py-3 pl-10 text-4xl font-bold text-center focus:border-emerald-500 outline-none placeholder:text-gray-100 text-gray-800" placeholder="0,00" value={budget > 0 ? budget.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''} onChange={e => { const raw = e.target.value.replace(/\D/g, ''); setBudget(raw ? parseFloat(raw)/100 : 0); }} />
               </div>
-              <div className="flex gap-4"><Button variant="secondary" className="flex-1 h-14 font-bold" onClick={() => { setBudget(0); setIsBudgetOpen(false); }}>Limpar</Button><Button className="flex-[2] h-14 font-bold text-lg" onClick={() => setIsBudgetOpen(false)}>Salvar Meta</Button></div>
+              <div className="flex gap-3"><Button variant="secondary" className="flex-1 h-12 font-semibold text-sm" onClick={() => { setBudget(0); setIsBudgetOpen(false); }}>Limpar</Button><Button className="flex-[2] h-12 font-bold" onClick={() => setIsBudgetOpen(false)}>Salvar Meta</Button></div>
             </div>
           </div>
         </div>
@@ -411,23 +499,24 @@ const App = () => {
       {/* MODAL: Detalhes */}
       {viewingPurchase && (
         <div className="fixed inset-0 z-50 bg-white animate-slideInRight overflow-hidden flex flex-col">
-          <div className="px-6 py-6 border-b flex items-center gap-4 sticky top-0 bg-white/80 backdrop-blur-md z-10">
-             <button onClick={() => setViewingPurchase(null)} className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-50 active:bg-gray-100 transition-colors"><ArrowLeft size={24} /></button>
-             <div><h3 className="font-black text-xl text-gray-800">Resumo</h3><p className="text-xs font-bold text-gray-400 uppercase">{formatDate(viewingPurchase.date)}</p></div>
+          <div className="px-4 py-3 border-b flex items-center gap-3 sticky top-0 bg-white/90 backdrop-blur-md z-10">
+             <button onClick={() => setViewingPurchase(null)} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 active:bg-gray-100 transition-colors"><ArrowLeft size={20} /></button>
+             <div><h3 className="font-bold text-base text-gray-800">Resumo da Compra</h3><p className="text-[10px] font-semibold text-gray-400 uppercase">{formatDate(viewingPurchase.date)}</p></div>
           </div>
-          <div className="flex-1 overflow-y-auto p-6">
-             <div className="bg-emerald-50 rounded-[32px] p-10 text-center mb-10">
-                <p className="text-emerald-600 font-black text-sm uppercase mb-2">Total Gasto</p>
-                <p className="text-6xl font-black text-emerald-800">{formatCurrency(viewingPurchase.total)}</p>
+          <div className="flex-1 overflow-y-auto p-4">
+             <div className="bg-emerald-50 rounded-2xl p-6 text-center mb-5">
+                <p className="text-emerald-600 font-bold text-xs uppercase mb-1">Total Gasto</p>
+                <p className="text-3xl font-bold text-emerald-800">{formatCurrency(viewingPurchase.total)}</p>
+                <p className="text-xs text-emerald-600/60 mt-1">{viewingPurchase.itemCount || viewingPurchase.items?.length} itens</p>
              </div>
-             <div className="space-y-4">
+             <div className="space-y-2">
                {viewingPurchase.items?.map((item, idx) => (
-                 <div key={idx} className="flex justify-between items-center p-5 bg-gray-50 rounded-3xl border border-gray-100">
-                   <div className="flex items-center gap-4">
-                      <div className="bg-white p-3 rounded-2xl text-gray-400 shadow-sm">{CATEGORIES.find(c => c.id === item.category)?.icon || <ShoppingBasket size={20}/>}</div>
-                      <div><p className="font-black text-gray-800 text-lg leading-none mb-1">{item.name}</p><p className="text-xs font-bold text-gray-400 uppercase">{item.quantity} {item.unit} x {formatCurrency(item.price)}</p></div>
+                 <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                   <div className="flex items-center gap-3">
+                      <div className="bg-white p-2 rounded-xl text-gray-400 shadow-sm">{CATEGORIES.find(c => c.id === item.category)?.icon || <ShoppingBasket size={16}/>}</div>
+                      <div><p className="font-semibold text-gray-800 text-sm">{item.name}</p><p className="text-[10px] text-gray-400">{item.quantity} {item.unit} x {formatCurrency(item.price)}</p></div>
                    </div>
-                   <p className="font-black text-gray-800 text-lg">{formatCurrency(item.price * item.quantity)}</p>
+                   <p className="font-bold text-gray-800 text-sm">{formatCurrency(item.price * item.quantity)}</p>
                  </div>
                ))}
              </div>
@@ -437,10 +526,10 @@ const App = () => {
 
       <ConfirmationModal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })} onConfirm={confirmModal.onConfirm} title={confirmModal.title} message={confirmModal.message} variant={confirmModal.variant} confirmText={confirmModal.confirmText} />
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 pb-safe pt-4 px-4 flex justify-around items-center z-40 md:max-w-md md:mx-auto">
-        <button onClick={() => setActiveTab('list')} className={`flex flex-col items-center gap-1.5 p-2 w-16 transition-all ${activeTab === 'list' ? 'text-emerald-600' : 'text-gray-300'}`}><ShoppingBasket size={28} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[10px] font-black uppercase tracking-tighter">Cestinha</span></button>
-        <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1.5 p-2 w-16 transition-all ${activeTab === 'history' ? 'text-emerald-600' : 'text-gray-300'}`}><History size={28} strokeWidth={activeTab === 'history' ? 2.5 : 2} /><span className="text-[10px] font-black uppercase tracking-tighter">Histórico</span></button>
-        <button onClick={() => setIsBudgetOpen(true)} className={`flex flex-col items-center gap-1.5 p-2 w-16 transition-all ${budget > 0 ? 'text-emerald-600' : 'text-gray-300'}`}><Wallet size={28} /><span className="text-[10px] font-black uppercase tracking-tighter">Meta</span></button>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 pb-safe pt-2 px-4 flex justify-around items-center z-40 md:max-w-md md:mx-auto">
+        <button onClick={() => setActiveTab('list')} className={`flex flex-col items-center gap-1 p-2 w-14 transition-all ${activeTab === 'list' ? 'text-emerald-600' : 'text-gray-300'}`}><ShoppingBasket size={22} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[9px] font-bold uppercase">Cestinha</span></button>
+        <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 p-2 w-14 transition-all ${activeTab === 'history' ? 'text-emerald-600' : 'text-gray-300'}`}><History size={22} strokeWidth={activeTab === 'history' ? 2.5 : 2} /><span className="text-[9px] font-bold uppercase">Histórico</span></button>
+        <button onClick={() => setIsBudgetOpen(true)} className={`flex flex-col items-center gap-1 p-2 w-14 transition-all ${budget > 0 ? 'text-emerald-600' : 'text-gray-300'}`}><Wallet size={22} /><span className="text-[9px] font-bold uppercase">Meta</span></button>
       </nav>
       
       <style>{`
