@@ -1,22 +1,34 @@
 # Minha Cestinha
 
-Aplicativo simples e intuitivo para controlar sua lista de compras, acompanhar metas de gasto, historico e analises. Os dados ficam salvos localmente no navegador via `localStorage`.
+Aplicativo web para controle de compras com foco em usabilidade mobile. Permite cadastrar itens, acompanhar metas de gasto e visualizar historico e analises, com persistencia local via `localStorage`.
 
 ## Funcionalidades
 
-- Cadastro de itens com nome, quantidade, unidade e categoria
+- Cadastro de itens com quantidade, unidade e categoria
 - Calculo automatico do total da cestinha
-- Meta de gasto com barra de progresso
-- Historico de compras finalizadas
-- Analises do consumo e comparacao de precos
-- Interface responsiva com foco em mobile
+- Meta de gastos com barra de progresso
+- Historico de compras finalizadas com detalhes
+- Analise por categoria e comparacao de preco
+- Interface responsiva otimizada para telas pequenas
 
-## Tecnologias
+## Tecnologias e stack
 
-- React 19
-- Vite 7
-- Tailwind CSS 3
-- Lucide Icons
+- React 19 (SPA com componentes funcionais e hooks)
+- Vite 7 (build e dev server)
+- Tailwind CSS 3 (estilizacao utilitaria)
+- Lucide React (icone set)
+
+## Requisitos
+
+- Node.js 18+ (recomendado)
+- npm 9+
+
+## Scripts
+
+- `npm run dev`: inicia o servidor de desenvolvimento
+- `npm run build`: gera a build de producao
+- `npm run preview`: preview local da build
+- `npm run lint`: lint do projeto
 
 ## Como rodar o projeto
 
@@ -34,23 +46,28 @@ npm run build
 npm run preview
 ```
 
+## Arquitetura e dados
+
+- Estado global em `App.jsx` com `useState` e `useMemo`
+- Persistencia via `localStorage` (itens, historico, meta)
+- Formulario e modais controlados por estado local
+- Regras de negocio e formatacao em helpers locais
+
 ## Estrutura de pastas
 
 ```
 src/
-	components/
-		ui/
-	data/
-	views/
-	App.jsx
-	main.jsx
+  components/
+    ui/
+  data/
+  views/
+  App.jsx
+  main.jsx
 public/
-	screenshots/
+  screenshots/
 ```
 
 ## Prints das telas
-
-> Coloque os arquivos em `public/screenshots` com os nomes abaixo.
 
 ![Tela de Cestinha](public/screenshots/cestinha.png)
 ![Tela de Analise](public/screenshots/analise.png)
