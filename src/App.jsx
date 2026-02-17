@@ -81,6 +81,15 @@ const PAYMENT_METHODS = [
 
 const getPaymentInfo = (id) => PAYMENT_METHODS.find(m => m.id === id);
 
+const loadRecentMarkets = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cestinha_recent_markets'));
+    return Array.isArray(saved) ? saved : [];
+  } catch (_) {
+    return [];
+  }
+};
+
 const App = () => {
   // --- Estados ---
   const [activeTab, setActiveTab] = useState('list');
@@ -88,12 +97,16 @@ const App = () => {
   const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('cestinha_history')) || []);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [budget, setBudget] = useState(() => parseFloat(localStorage.getItem('cestinha_budget')) || 0);
+  const [marketName, setMarketName] = useState(() => localStorage.getItem('cestinha_market') || '');
+  const [recentMarkets, setRecentMarkets] = useState(() => loadRecentMarkets());
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = useState(false);
   const [isFinishOpen, setIsFinishOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [viewingPurchase, setViewingPurchase] = useState(null);
+  const [isEditingMarket, setIsEditingMarket] = useState(false);
+  const [marketDraft, setMarketDraft] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'danger' });
 
@@ -104,6 +117,8 @@ const App = () => {
   useEffect(() => { localStorage.setItem('cestinha_items', JSON.stringify(items)); }, [items]);
   useEffect(() => { localStorage.setItem('cestinha_budget', budget.toString()); }, [budget]);
   useEffect(() => { localStorage.setItem('cestinha_history', JSON.stringify(history)); }, [history]);
+  useEffect(() => { localStorage.setItem('cestinha_market', marketName); }, [marketName]);
+  useEffect(() => { localStorage.setItem('cestinha_recent_markets', JSON.stringify(recentMarkets)); }, [recentMarkets]);
 
   // --- Sincronização com Backend ---
   const fetchHistoryFromDb = async () => {
@@ -164,6 +179,52 @@ const App = () => {
     return null;
   };
 
+  const normalizeMarket = (value) => value.trim().replace(/\s+/g, ' ');
+
+  const isSamePurchase = (a, b) => {
+    if (!a || !b) return false;
+    if (a.id && b.id) return a.id === b.id;
+    return a.date === b.date && a.total === b.total;
+  };
+
+  const pushRecentMarket = (value) => {
+    const normalized = normalizeMarket(value);
+    if (!normalized) return;
+    setRecentMarkets(prev => {
+      const filtered = prev.filter(m => m.toLowerCase() !== normalized.toLowerCase());
+      return [normalized, ...filtered].slice(0, 6);
+    });
+  };
+
+  const openPurchaseDetails = (purchase) => {
+    setViewingPurchase(purchase);
+    setMarketDraft(purchase?.market || '');
+    setIsEditingMarket(false);
+  };
+
+  const saveMarketForPurchase = async () => {
+    if (!viewingPurchase) return;
+    const normalized = normalizeMarket(marketDraft);
+    const updatedPurchase = { ...viewingPurchase, market: normalized || null };
+    setHistory(prev => prev.map(p => (isSamePurchase(p, viewingPurchase) ? updatedPurchase : p)));
+    setViewingPurchase(updatedPurchase);
+    setIsEditingMarket(false);
+    if (normalized) pushRecentMarket(normalized);
+
+    if (!import.meta.env.DEV && viewingPurchase.id) {
+      try {
+        const response = await fetch('/api/atualizar-mercado', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: viewingPurchase.id, market: normalized || null })
+        });
+        if (!response.ok) throw new Error('Erro ao atualizar mercado');
+      } catch (_) {
+        console.warn('Falha ao atualizar mercado no servidor.');
+      }
+    }
+  };
+
   // --- Handlers ---
   const handlePriceChange = (e) => {
     const rawValue = e.target.value.replace(/\D/g, ''); 
@@ -200,13 +261,15 @@ const App = () => {
 
   const confirmFinishShopping = async () => {
     if (!selectedPayment) return;
+    const normalizedMarket = normalizeMarket(marketName);
     const newPurchase = {
       date: new Date().toISOString(),
       total: totalCost,
       itemCount: items.length,
       items: [...items],
       budget: budget > 0 ? budget : null,
-      paymentMethod: selectedPayment
+      paymentMethod: selectedPayment,
+      market: normalizedMarket || null
     };
 
     setHistory(prev => [newPurchase, ...prev]);
@@ -214,6 +277,8 @@ const App = () => {
     setBudget(0);
     setIsFinishOpen(false);
     setActiveTab('history');
+
+    if (normalizedMarket) pushRecentMarket(normalizedMarket);
 
     if (!import.meta.env.DEV) {
       try {
@@ -266,6 +331,34 @@ const App = () => {
         ) : (
           <button onClick={() => setIsBudgetOpen(true)} className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl transition-all w-full text-left flex items-center gap-2 border border-white/10 font-medium"><Wallet size={14} /> Definir limite de gastos</button>
         )}
+        <div className="mt-3 space-y-2">
+          <label className="block text-[10px] font-bold text-emerald-100 uppercase tracking-wider">Mercado</label>
+          <input
+            type="text"
+            list="market-suggestions"
+            placeholder="Ex: Supermercado X"
+            className="w-full px-3 py-2 rounded-xl bg-white/15 placeholder:text-emerald-100/70 text-white text-sm outline-none border border-white/15 focus:border-white/40"
+            value={marketName}
+            onChange={e => setMarketName(e.target.value)}
+          />
+          <datalist id="market-suggestions">
+            {recentMarkets.map(market => (
+              <option key={market} value={market} />
+            ))}
+          </datalist>
+          {recentMarkets.length > 0 && (
+            <select
+              defaultValue=""
+              className="w-full px-3 py-2 rounded-xl bg-white/10 text-white text-sm outline-none border border-white/10"
+              onChange={e => setMarketName(e.target.value)}
+            >
+              <option value="" disabled>Selecionar mercado recente</option>
+              {recentMarkets.map(market => (
+                <option key={`${market}-recent`} value={market} className="text-gray-800">{market}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </Card>
 
       <div className="space-y-2">
@@ -413,7 +506,7 @@ const App = () => {
                         return (
                         <Card key={purchase.id || idx} className="mb-1.5">
                           <div className="p-3 flex items-center gap-3">
-                            <div className="flex-1 cursor-pointer" onClick={() => setViewingPurchase(purchase)}>
+                            <div className="flex-1 cursor-pointer" onClick={() => openPurchaseDetails(purchase)}>
                               <div className="flex justify-between items-center mb-1">
                                 <span className="text-xs text-gray-500 font-medium">
                                   {new Date(purchase.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -423,6 +516,7 @@ const App = () => {
                               <div className="flex items-center gap-2 flex-wrap mb-1">
                                 {pm && <span className="flex items-center gap-1 text-[10px] font-semibold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">{pm.icon} {pm.label}</span>}
                                 {purchase.budget && <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md">Meta: {formatCurrency(purchase.budget)}</span>}
+                                {purchase.market && <span className="text-[10px] font-semibold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded-md">Mercado: {purchase.market}</span>}
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-[11px] text-gray-400">{purchase.itemCount || purchase.items?.length} itens</span>
@@ -550,6 +644,9 @@ const App = () => {
                     Meta: {formatCurrency(budget)} · {remainingBudget >= 0 ? `Economia de ${formatCurrency(remainingBudget)}` : `Estourou ${formatCurrency(Math.abs(remainingBudget))}`}
                   </div>
                 )}
+                {marketName && (
+                  <div className="mt-2 text-xs font-semibold text-emerald-700">Mercado: {marketName}</div>
+                )}
               </div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Forma de Pagamento</label>
               <div className="grid grid-cols-2 gap-2 mb-5">
@@ -579,7 +676,7 @@ const App = () => {
                 <p className="text-xs text-emerald-600/60 mt-1">{viewingPurchase.itemCount || viewingPurchase.items?.length} itens</p>
              </div>
              {(viewingPurchase.paymentMethod || viewingPurchase.budget) && (
-             <div className="flex gap-2 mb-5">
+             <div className="flex flex-wrap gap-2 mb-5">
                {(() => { const pm = getPaymentInfo(viewingPurchase.paymentMethod); return pm ? (
                  <div className="flex-1 bg-gray-50 rounded-xl p-3 flex items-center gap-2 border border-gray-100">
                    <span className="text-gray-500">{pm.icon}</span>
@@ -597,6 +694,36 @@ const App = () => {
                )}
              </div>
              )}
+             <div className="bg-sky-50 rounded-2xl p-4 border border-sky-100 mb-5">
+               <div className="flex items-center justify-between mb-2">
+                 <p className="text-[10px] text-sky-500 font-bold uppercase">Mercado</p>
+                 {!isEditingMarket ? (
+                   <button onClick={() => setIsEditingMarket(true)} className="text-xs font-semibold text-sky-600 hover:text-sky-700">Editar</button>
+                 ) : (
+                   <button onClick={() => { setIsEditingMarket(false); setMarketDraft(viewingPurchase.market || ''); }} className="text-xs font-semibold text-gray-400 hover:text-gray-500">Cancelar</button>
+                 )}
+               </div>
+               {!isEditingMarket ? (
+                 <p className="text-sm font-semibold text-sky-700">{viewingPurchase.market || 'Nao informado'}</p>
+               ) : (
+                 <div className="space-y-2">
+                   <input
+                     type="text"
+                     list="market-suggestions-history"
+                     placeholder="Ex: Supermercado X"
+                     className="w-full px-3 py-2 rounded-xl bg-white text-gray-700 text-sm outline-none border border-sky-200 focus:border-sky-400"
+                     value={marketDraft}
+                     onChange={e => setMarketDraft(e.target.value)}
+                   />
+                   <datalist id="market-suggestions-history">
+                     {recentMarkets.map(market => (
+                       <option key={`history-${market}`} value={market} />
+                     ))}
+                   </datalist>
+                   <button onClick={saveMarketForPurchase} className="w-full text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl py-2">Salvar mercado</button>
+                 </div>
+               )}
+             </div>
              <div className="space-y-2">
                {viewingPurchase.items?.map((item, idx) => (
                  <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
