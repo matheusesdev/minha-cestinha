@@ -308,7 +308,7 @@ const App = () => {
 
   // --- Views ---
 
-  const ListView = () => (
+  const listView = (
     <div className="space-y-3 pb-28 animate-fadeIn">
       <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 border-none shadow-lg shadow-emerald-200/40">
         <div className="flex justify-between items-start mb-3">
@@ -438,9 +438,8 @@ const App = () => {
     });
   };
 
-  const HistoryView = () => {
-    // Agrupamento por mês
-    const groupedByMonth = useMemo(() => {
+  // Agrupamento por mês (movido para App level)
+  const groupedByMonth = useMemo(() => {
       const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
       const groups = {};
       sorted.forEach(purchase => {
@@ -458,9 +457,9 @@ const App = () => {
         groups[monthKey].days[dayKey].purchases.push(purchase);
       });
       return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
-    }, [history]);
+  }, [history]);
 
-    return (
+  const historyView = (
       <div className="space-y-4 pb-24 animate-fadeIn">
         <div className="flex justify-between items-center px-1">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><History size={22} className="text-emerald-600" /> Histórico</h2>
@@ -541,8 +540,7 @@ const App = () => {
           </div>
         )}
       </div>
-    );
-  };
+  );
 
   return (
     <div className="min-h-screen bg-gray-50/50 font-sans text-gray-900 md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
@@ -554,8 +552,8 @@ const App = () => {
       </div>
 
       <main className="p-4 sm:p-5">
-        {activeTab === 'list' && <ListView />}
-        {activeTab === 'history' && <HistoryView />}
+        {activeTab === 'list' && listView}
+        {activeTab === 'history' && historyView}
         {activeTab === 'stats' && <div className="p-10 text-center text-gray-400">Em desenvolvimento...</div>}
       </main>
 
